@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           Int      @id @default(autoincrement())
+  passwordHash String
+  updatedAt    DateTime @updatedAt
+}
+
+model CampaignSettings {
+  id               Int      @id @default(autoincrement())
+  campaignName     String   @default("Corporate Giving Hub")
+  campaignDescription String @default("")
+  committeeName    String   @default("AAPLE Corporate Giving Committee")
+  startDate        DateTime?
+  endDate          DateTime?
+  meetingSchedule  String   @default("")
+  showTeamAvatars  Boolean  @default(true)
+  showMoversOnDash Boolean  @default(true)
+  primaryAccent    String   @default("#2a78d6")
+  updatedAt        DateTime @updatedAt
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String   @default("")
+  slogan      String   @default("")
+  color       String   @default("#2a78d6")
+  logo        String   @default("")
+  archived    Boolean  @default(false)
+  isDemo      Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  students   Student[]
+  activities Activity[]
+  wins       WinOfWeek[]
+
+  @@index([archived])
+}
+
+model Student {
+  id        String   @id @default(cuid())
+  name      String
+  active    Boolean  @default(true)
+  isDemo    Boolean  @default(false)
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  activities Activity[]
+
+  @@index([teamId])
+}
+
+enum ScoringType {
+  FIXED
+  DOLLAR
+}
+
+enum StatKind {
+  DOLLARS
+  BUSINESS_CONTACTED
+  MEETING
+  PITCH
+  BONUS
+}
+
+model ScoringCategory {
+  id           String      @id @default(cuid())
+  name         String
+  description  String      @default("")
+  type         ScoringType @default(FIXED)
+  statKind     StatKind    @default(BONUS)
+  pointValue   Float       @default(0)
+  pointsPer100 Float       @default(0)
+  enabled      Boolean     @default(true)
+  isDemo       Boolean     @default(false)
+  order        Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  activities Activity[]
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Activity {
+  id             String         @id @default(cuid())
+  teamId         String
+  team           Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  studentId      String?
+  student        Student?       @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  categoryId     String
+  category       ScoringCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  sprintId       String?
+  sprint         Sprint?        @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  date           DateTime       @default(now())
+  quantity       Float          @default(1)
+  dollarAmount   Float          @default(0)
+  notes          String         @default("")
+  evidence       String         @default("")
+  approvalStatus ApprovalStatus @default(APPROVED)
+  pointsAwarded  Float          @default(0)
+  isDemo         Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([teamId])
+  @@index([categoryId])
+  @@index([date])
+}
+
+enum SprintStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+}
+
+model Sprint {
+  id                 String       @id @default(cuid())
+  name               String
+  description        String       @default("")
+  startDate          DateTime
+  endDate            DateTime
+  status             SprintStatus @default(UPCOMING)
+  bonusOpportunities String       @default("")
+  isDemo             Boolean      @default(false)
+  order              Int          @default(0)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  activities Activity[]
+  meetings   Meeting[]
+}
+
+model Judge {
+  id               String   @id @default(cuid())
+  name             String
+  role             String   @default("")
+  responsibilities String   @default("")
+  isDemo           Boolean  @default(false)
+  order            Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+enum RuleSection {
+  VERIFICATION
+  COMPETITION
+}
+
+model Rule {
+  id        String      @id @default(cuid())
+  section   RuleSection
+  title     String
+  content   String      @default("")
+  isDemo    Boolean     @default(false)
+  order     Int         @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Prize {
+  id             String   @id @default(cuid())
+  name           String
+  description    String   @default("")
+  icon           String   @default("🎁")
+  eligibility    String   @default("")
+  requiredRank   Int?
+  requiredPoints Float?
+  quantity       Int      @default(1)
+  claimed        Boolean  @default(false)
+  isDemo         Boolean  @default(false)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Award {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  icon        String   @default("🏅")
+  isDemo      Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  wins WinOfWeek[]
+}
+
+model WinOfWeek {
+  id           String   @id @default(cuid())
+  awardId      String
+  award        Award    @relation(fields: [awardId], references: [id], onDelete: Cascade)
+  winnerName   String
+  teamId       String?
+  team         Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  date         DateTime @default(now())
+  description  String   @default("")
+  bonusPoints  Float    @default(0)
+  prize        String   @default("")
+  isDemo       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([date])
+}
+
+model Meeting {
+  id               String   @id @default(cuid())
+  date             DateTime
+  title            String
+  sprintId         String?
+  sprint           Sprint?  @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  energyOpener     String   @default("")
+  sprintChallenge  String   @default("")
+  workBlockNotes   String   @default("")
+  nextMeetingGoal  String   @default("")
+  isDemo           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
