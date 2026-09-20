@@ -8,9 +8,11 @@ and a fully editable admin control panel.
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/import?s=https://github.com/ellijellibellibutton-rgb/Elliott/tree/claude/exciting-knuth-iph3l6)
 
 Clicking that imports this exact branch into a new Vercel project. You'll
-still need to add a Postgres database and the three env vars below (Vercel
-prompts for env vars during that same import flow) — see
-[Deploying to Vercel](#deploying-to-vercel).
+still need to add a Postgres database and one env var (see
+[Deploying to Vercel](#deploying-to-vercel)) — the app auto-detects
+whatever connection-string variable names Vercel's own Postgres
+integration (or Neon/Supabase) injects, so there's no copying database
+secrets around by hand.
 
 ## Stack
 
@@ -49,7 +51,13 @@ Open [http://localhost:3000](http://localhost:3000).
 
 This app is set up so `npm run build` runs `prisma migrate deploy`
 automatically before `next build`, so a plain Vercel deploy keeps the
-database schema in sync on every push — no manual migration step.
+database schema in sync on every push — no manual migration step. It also
+auto-detects whichever Postgres connection-string variable names your
+provider injected (Vercel Postgres/Neon typically use `POSTGRES_URL` /
+`POSTGRES_PRISMA_URL` / `POSTGRES_URL_NON_POOLING`, not `DATABASE_URL` /
+`DIRECT_URL` directly), so **you generally don't need to create or copy
+any database env vars by hand** — see `lib/dbUrl.ts` / `scripts/resolve-db-url.cjs`
+if you want to see exactly how.
 
 1. Push this repo to GitHub (already done if you're reading this from the
    repo) and import it in the [Vercel dashboard](https://vercel.com/new).
@@ -57,18 +65,17 @@ database schema in sync on every push — no manual migration step.
 2. Add a Postgres database from the **Storage** tab of your Vercel project
    (Vercel offers Neon-backed Postgres directly) — or create one yourself
    on [Neon](https://neon.tech)/[Supabase](https://supabase.com) and link
-   it manually. Either way this gives you a connection string.
-3. In **Project Settings → Environment Variables**, set:
-   - `DATABASE_URL` — the **pooled** connection string (Neon/Vercel
-     Postgres provide one automatically, usually with `-pooler` in the
-     hostname, or a `?pgbouncer=true` flag).
-   - `DIRECT_URL` — the **direct/unpooled** connection string (used only
-     for running migrations during build).
-   - `ADMIN_SESSION_SECRET` — a long random string.
+   it manually. Once connected, its connection strings are already in your
+   project's environment variables — nothing more to do here.
+3. In **Project Settings → Environment Variables**, add just one:
+   - `ADMIN_SESSION_SECRET` — any long random string you make up yourself.
+   (Only add `DATABASE_URL` / `DIRECT_URL` manually if your provider didn't
+   auto-inject any of the recognized names above — check `lib/dbUrl.ts`
+   for the full fallback list.)
 4. Deploy.
 5. Once it's live, populate the database by visiting, in your browser:
    `https://<your-vercel-url>/api/setup?key=<your ADMIN_SESSION_SECRET>`
-   (the same value you set in step 3 — no separate secret to manage). This
+   (the same value from step 3 — no separate secret to manage). This
    creates the admin account and default demo data; it's safe to load more
    than once, it only fills in what's missing.
 6. Go to `/admin`, log in with `AAPLE2026`, and change the password
