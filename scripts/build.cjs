@@ -1,17 +1,22 @@
 // Build orchestrator for Vercel (and any other host running `npm run build`).
 //
-// Vercel's own Postgres integration (and most marketplace providers) inject
-// connection strings under provider-specific names like POSTGRES_PRISMA_URL
-// / POSTGRES_URL_NON_POOLING rather than the DATABASE_URL / DIRECT_URL this
-// app's Prisma schema names. We resolve those here and pass them directly
-// to each child process's environment — NOT via a .env file — because
-// dotenv-style loaders (which the Prisma CLI uses) refuse to override a
-// variable that already exists in process.env, even if it's set to an
-// empty string. That "already exists but empty" case is exactly what
-// happens if DIRECT_URL was ever manually added in the Vercel dashboard
-// with no value: writing to .env silently has no effect, and Prisma fails
-// with "resolved to an empty string." Passing an explicit env object to
-// each spawned command sidesteps that entirely.
+// A connected Postgres integration (Vercel's own, Neon, Supabase, ...)
+// injects connection strings under whatever variable names that specific
+// integration setup uses — including any custom prefix the admin chose
+// when connecting it (e.g. `POSTGRES_URL_POSTGRES_PRISMA_URL`,
+// `POSTGRES_URL_NON_POOLING`). Guessing a fixed list of exact names is
+// fragile, so instead we scan every env var for one whose *value* looks
+// like a Postgres connection string, and use name hints to pick the
+// pooled one apart from the direct/non-pooling one. See lib/dbUrl.ts for
+// the same logic used at runtime.
+//
+// Either way, we pass the resolved values directly to each spawned
+// command's environment — NOT via a .env file — because dotenv-style
+// loaders (which the Prisma CLI uses) refuse to override a variable that
+// already exists in process.env, even if it's set to an empty string.
+// That "already exists but empty" case happens if DATABASE_URL/DIRECT_URL
+// was ever manually added in the Vercel dashboard with no value: writing
+// to .env would silently have no effect there.
 const { execSync } = require("child_process");
 
 // Plain `node` doesn't auto-load .env the way Next.js/Prisma's CLIs do —
@@ -24,35 +29,47 @@ try {
   // dotenv not installed — fine on a host that injects env vars directly.
 }
 
-const POOLED_CANDIDATES = ["DATABASE_URL", "POSTGRES_PRISMA_URL", "POSTGRES_URL", "DATABASE_URI"];
-const DIRECT_CANDIDATES = ["DIRECT_URL", "POSTGRES_URL_NON_POOLING", "DATABASE_URL_UNPOOLED"];
+const CONNECTION_STRING_RE = /^postgres(ql)?:\/\//i;
+const DIRECT_NAME_HINT_RE = /NON.?POOLING|UNPOOLED|_DIRECT_/i;
+const PRISMA_NAME_HINT_RE = /PRISMA/i;
 
-function firstNonEmpty(names) {
-  for (const name of names) {
-    const value = process.env[name];
-    if (value) return value;
-  }
-  return undefined;
+function findConnectionStrings() {
+  return Object.entries(process.env).filter(
+    ([, value]) => typeof value === "string" && CONNECTION_STRING_RE.test(value)
+  );
 }
 
-const pooled = firstNonEmpty(POOLED_CANDIDATES);
-const direct = firstNonEmpty(DIRECT_CANDIDATES) || pooled;
+function resolvePooled(candidates) {
+  if (process.env.DATABASE_URL) return { value: process.env.DATABASE_URL, source: "DATABASE_URL" };
+  const nonDirect = candidates.filter(([name]) => !DIRECT_NAME_HINT_RE.test(name));
+  const prismaMatch = nonDirect.find(([name]) => PRISMA_NAME_HINT_RE.test(name));
+  const picked = prismaMatch ?? nonDirect[0] ?? candidates[0];
+  return picked ? { value: picked[1], source: picked[0] } : { value: undefined, source: null };
+}
 
-if (!pooled) {
+function resolveDirect(candidates, pooled) {
+  if (process.env.DIRECT_URL) return { value: process.env.DIRECT_URL, source: "DIRECT_URL" };
+  const directMatch = candidates.find(([name]) => DIRECT_NAME_HINT_RE.test(name));
+  if (directMatch) return { value: directMatch[1], source: directMatch[0] };
+  return { value: pooled.value, source: pooled.source ? `${pooled.source} (fallback)` : null };
+}
+
+const candidates = findConnectionStrings();
+const pooled = resolvePooled(candidates);
+const direct = resolveDirect(candidates, pooled);
+
+if (!pooled.value) {
   console.error(
-    "[build] No usable Postgres connection string found (checked " +
-      POOLED_CANDIDATES.join(", ") +
-      "). Add a Postgres database in Vercel's Storage tab, or set DATABASE_URL yourself."
+    "[build] No Postgres connection string found anywhere in the environment. " +
+      "Add a Postgres database in Vercel's Storage tab and make sure it's connected " +
+      "to this project, or set DATABASE_URL yourself in Project Settings."
   );
   process.exit(1);
 }
 
-const env = { ...process.env, DATABASE_URL: pooled, DIRECT_URL: direct };
+console.log(`[build] Using DATABASE_URL from ${pooled.source}, DIRECT_URL from ${direct.source}.`);
 
-console.log(
-  `[build] Resolved DATABASE_URL from ${pooled === process.env.DATABASE_URL ? "DATABASE_URL" : "a provider variable"}, ` +
-    `DIRECT_URL from ${direct === process.env.DIRECT_URL && process.env.DIRECT_URL ? "DIRECT_URL" : "a provider variable / DATABASE_URL fallback"}.`
-);
+const env = { ...process.env, DATABASE_URL: pooled.value, DIRECT_URL: direct.value };
 
 function run(cmd) {
   console.log(`[build] $ ${cmd}`);
