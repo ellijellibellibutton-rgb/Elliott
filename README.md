@@ -65,14 +65,14 @@ database schema in sync on every push — no manual migration step.
    - `DIRECT_URL` — the **direct/unpooled** connection string (used only
      for running migrations during build).
    - `ADMIN_SESSION_SECRET` — a long random string.
-4. Deploy. After the first deploy, run the seed once against production so
-   the app isn't empty:
-   ```bash
-   DATABASE_URL="<your prod DATABASE_URL>" npm run db:seed
-   ```
-5. Visit your Vercel URL, then go to `/admin` and change the default
-   password (`AAPLE2026`) immediately — Data Management → Change Admin
-   Password.
+4. Deploy.
+5. Once it's live, populate the database by visiting, in your browser:
+   `https://<your-vercel-url>/api/setup?key=<your ADMIN_SESSION_SECRET>`
+   (the same value you set in step 3 — no separate secret to manage). This
+   creates the admin account and default demo data; it's safe to load more
+   than once, it only fills in what's missing.
+6. Go to `/admin`, log in with `AAPLE2026`, and change the password
+   immediately — Data Management → Change Admin Password.
 
 ## What's editable
 
