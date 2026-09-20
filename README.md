@@ -5,6 +5,13 @@ student committee. Teams compete to contact businesses, book meetings, give
 pitches, and raise money — all tracked with a live leaderboard, analytics,
 and a fully editable admin control panel.
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/import?s=https://github.com/ellijellibellibutton-rgb/Elliott/tree/claude/exciting-knuth-iph3l6)
+
+Clicking that imports this exact branch into a new Vercel project. You'll
+still need to add a Postgres database and the three env vars below (Vercel
+prompts for env vars during that same import flow) — see
+[Deploying to Vercel](#deploying-to-vercel).
+
 ## Stack
 
 - **Next.js 16** (App Router) + **TypeScript**
