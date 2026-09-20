@@ -9,17 +9,22 @@ and a fully editable admin control panel.
 
 - **Next.js 16** (App Router) + **TypeScript**
 - **Tailwind CSS v4**
-- **Prisma + SQLite** for a real, persistent relational database
+- **Prisma + PostgreSQL** for a real, persistent relational database
 - Custom **JWT-based admin authentication** (`jose` + `bcryptjs`), enforced
   server-side on every mutating API route — not just hidden in the UI
 - **Recharts** for analytics visualizations
 
-## Getting Started
+## Getting Started (local development)
+
+You need a Postgres database. The quickest option is a free one from
+[Neon](https://neon.tech) or [Supabase](https://supabase.com); or run
+Postgres locally / via Docker.
 
 ```bash
 npm install
-npx prisma migrate deploy   # create the SQLite database
-npm run db:seed             # seed default settings + demo data
+cp .env.example .env         # fill in DATABASE_URL / DIRECT_URL / ADMIN_SESSION_SECRET
+npx prisma migrate deploy    # create the schema
+npm run db:seed              # seed default settings + demo data
 npm run dev
 ```
 
@@ -27,9 +32,40 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **Admin panel:** `/admin` — default password is `AAPLE2026` (change it
   from Admin → Data Management once you're in).
-- The `.env` file configures `DATABASE_URL` (SQLite file) and
-  `ADMIN_SESSION_SECRET` (used to sign admin session cookies — change this
-  for a real deployment).
+- `DATABASE_URL` is the pooled connection string the app uses at runtime;
+  `DIRECT_URL` is the direct/unpooled one Prisma uses to run migrations.
+  For a simple single Postgres instance (e.g. local dev) they can be the
+  same value. `ADMIN_SESSION_SECRET` signs the admin session cookie —
+  always set a long random value for a real deployment.
+
+## Deploying to Vercel
+
+This app is set up so `npm run build` runs `prisma migrate deploy`
+automatically before `next build`, so a plain Vercel deploy keeps the
+database schema in sync on every push — no manual migration step.
+
+1. Push this repo to GitHub (already done if you're reading this from the
+   repo) and import it in the [Vercel dashboard](https://vercel.com/new).
+   Vercel auto-detects the Next.js project; no config changes needed.
+2. Add a Postgres database from the **Storage** tab of your Vercel project
+   (Vercel offers Neon-backed Postgres directly) — or create one yourself
+   on [Neon](https://neon.tech)/[Supabase](https://supabase.com) and link
+   it manually. Either way this gives you a connection string.
+3. In **Project Settings → Environment Variables**, set:
+   - `DATABASE_URL` — the **pooled** connection string (Neon/Vercel
+     Postgres provide one automatically, usually with `-pooler` in the
+     hostname, or a `?pgbouncer=true` flag).
+   - `DIRECT_URL` — the **direct/unpooled** connection string (used only
+     for running migrations during build).
+   - `ADMIN_SESSION_SECRET` — a long random string.
+4. Deploy. After the first deploy, run the seed once against production so
+   the app isn't empty:
+   ```bash
+   DATABASE_URL="<your prod DATABASE_URL>" npm run db:seed
+   ```
+5. Visit your Vercel URL, then go to `/admin` and change the default
+   password (`AAPLE2026`) immediately — Data Management → Change Admin
+   Password.
 
 ## What's editable
 
