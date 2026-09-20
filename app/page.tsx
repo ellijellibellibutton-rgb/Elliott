@@ -102,13 +102,13 @@ export default function HomePage() {
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
-                {data.settings.committeeName}
+                {data.settings?.committeeName ?? "AAPLE Corporate Giving Committee"}
               </p>
               <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
-                {data.settings.campaignName}
+                {data.settings?.campaignName ?? "Corporate Giving Hub"}
               </h1>
               <p className="mt-2 max-w-xl text-sm text-slate-300 sm:text-base">
-                {data.settings.campaignDescription}
+                {data.settings?.campaignDescription ?? ""}
               </p>
             </div>
             {data.currentSprint && (

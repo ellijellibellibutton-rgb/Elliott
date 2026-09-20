@@ -7,7 +7,7 @@ export async function GET() {
   const now = new Date();
 
   const [
-    settings,
+    rawSettings,
     leaderboard,
     currentSprint,
     latestWin,
@@ -42,6 +42,8 @@ export async function GET() {
     prisma.prize.findMany({ orderBy: { order: "asc" }, take: 6 }),
     computeAnalytics(),
   ]);
+
+  const settings = rawSettings ?? (await prisma.campaignSettings.create({ data: {} }));
 
   return NextResponse.json({
     settings,
