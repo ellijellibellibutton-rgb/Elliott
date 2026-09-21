@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import clsx from "clsx";
+import { motion } from "framer-motion";
 
 const LINKS = [
   { href: "/", label: "Leaderboard", emoji: "🏆" },
@@ -38,14 +39,21 @@ export default function Navbar({ campaignName }: { campaignName: string }) {
                 key={link.href}
                 href={link.href}
                 className={clsx(
-                  "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-white/10 text-white"
-                    : "text-slate-300 hover:bg-white/5 hover:text-white"
+                  "relative flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
+                  active ? "text-white" : "text-slate-300 hover:text-white"
                 )}
               >
-                <span aria-hidden>{link.emoji}</span>
-                {link.label}
+                {active && (
+                  <motion.span
+                    layoutId="navbar-active-pill"
+                    className="absolute inset-0 rounded-full bg-white/10"
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                  />
+                )}
+                <span className="relative flex items-center gap-1.5">
+                  <span aria-hidden>{link.emoji}</span>
+                  {link.label}
+                </span>
               </Link>
             );
           })}

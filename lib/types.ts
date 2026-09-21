@@ -158,6 +158,7 @@ export type CampaignSettings = {
   showTeamAvatars: boolean;
   showMoversOnDash: boolean;
   primaryAccent: string;
+  heroImageUrl: string;
 };
 
 export type DashboardData = {

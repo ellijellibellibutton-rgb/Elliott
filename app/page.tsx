@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useLivePolling } from "@/hooks/useLivePolling";
+import { useCountUp } from "@/hooks/useCountUp";
 import type { DashboardData, LeaderboardRow } from "@/lib/types";
 import { formatCurrency, formatDate, formatDateTime, formatPoints } from "@/lib/format";
 import TeamAvatar from "@/components/TeamAvatar";
@@ -25,6 +27,15 @@ const SORT_LABELS: Record<SortKey, string> = {
   meetings: "Meetings",
   pitches: "Pitches",
   bonusPoints: "Bonus",
+};
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  show: (i: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.06, duration: 0.5, ease: "easeOut" },
+  }),
 };
 
 export default function HomePage() {
@@ -94,15 +105,38 @@ export default function HomePage() {
     }
   }
 
+  const heroImage = data.settings?.heroImageUrl;
+
   return (
     <div className="bg-[var(--background)]">
       {/* Hero */}
-      <section className="border-b border-[var(--border-subtle)] bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 text-white">
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
+      <section className="relative overflow-hidden border-b border-[var(--border-subtle)] text-white">
+        {heroImage ? (
+          <>
+            <div
+              className="absolute inset-0 scale-105 bg-cover bg-center"
+              style={{ backgroundImage: `url(${heroImage})` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-navy-950/95 via-navy-900/90 to-navy-800/85" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800">
+            <div
+              className="absolute inset-0 opacity-[0.07]"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+                backgroundSize: "28px 28px",
+              }}
+            />
+          </div>
+        )}
+
+        <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
           <div className="flex flex-wrap items-start justify-between gap-6">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
-                {data.settings?.committeeName ?? "AAPLE Corporate Giving Committee"}
+            <motion.div initial="hidden" animate="show" variants={fadeUp} custom={0}>
+              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-blue-300">
+                <LivePulse /> {data.settings?.committeeName ?? "AAPLE Corporate Giving Committee"}
               </p>
               <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
                 {data.settings?.campaignName ?? "Corporate Giving Hub"}
@@ -110,9 +144,15 @@ export default function HomePage() {
               <p className="mt-2 max-w-xl text-sm text-slate-300 sm:text-base">
                 {data.settings?.campaignDescription ?? ""}
               </p>
-            </div>
+            </motion.div>
             {data.currentSprint && (
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
+              <motion.div
+                initial="hidden"
+                animate="show"
+                variants={fadeUp}
+                custom={1}
+                className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-sm"
+              >
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-300">
                   Current Sprint
                 </p>
@@ -123,18 +163,24 @@ export default function HomePage() {
                 <p className="mt-2 text-[11px] text-slate-400">
                   {formatDate(data.currentSprint.startDate)} – {formatDate(data.currentSprint.endDate)}
                 </p>
-              </div>
+              </motion.div>
             )}
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-            <MiniStat label="Total Points" value={formatPoints(data.totals.totalPoints)} />
-            <MiniStat label="Dollars Raised" value={formatCurrency(data.totals.totalDollars)} />
-            <MiniStat label="Businesses" value={data.totals.businessesContacted} />
-            <MiniStat label="Meetings" value={data.totals.meetings} />
-            <MiniStat label="Pitches" value={data.totals.pitches} />
-            <MiniStat label="Teams" value={data.totals.activeTeams} />
-          </div>
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={fadeUp}
+            custom={2}
+            className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6"
+          >
+            <MiniStat label="Total Points" raw={data.totals.totalPoints} format={formatPoints} />
+            <MiniStat label="Dollars Raised" raw={data.totals.totalDollars} format={formatCurrency} />
+            <MiniStat label="Businesses" raw={data.totals.businessesContacted} />
+            <MiniStat label="Meetings" raw={data.totals.meetings} />
+            <MiniStat label="Pitches" raw={data.totals.pitches} />
+            <MiniStat label="Teams" raw={data.totals.activeTeams} />
+          </motion.div>
         </div>
       </section>
 
@@ -142,20 +188,30 @@ export default function HomePage() {
         {/* Top 3 podium */}
         <div className="grid gap-4 sm:grid-cols-3">
           {top3.map((team, idx) => (
-            <PodiumCard key={team.teamId} team={team} highlight={idx === 0} />
+            <PodiumCard key={team.teamId} team={team} highlight={idx === 0} index={idx} />
           ))}
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
           {/* Leaderboard table */}
-          <div className="card overflow-hidden lg:col-span-2">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="card overflow-hidden lg:col-span-2"
+          >
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] px-5 py-4">
-              <h2 className="text-lg font-bold text-navy-900">Full Leaderboard</h2>
+              <h2 className="flex items-center gap-2 text-lg font-bold text-navy-900">
+                Full Leaderboard
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-600">
+                  <LivePulse color="#0ca30c" /> Live
+                </span>
+              </h2>
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search teams…"
-                className="w-48 rounded-full border border-[var(--border-subtle)] px-3.5 py-1.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                className="w-48 rounded-full border border-[var(--border-subtle)] px-3.5 py-1.5 text-sm outline-none transition-shadow focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               />
             </div>
             <div className="scrollbar-thin overflow-x-auto">
@@ -167,12 +223,19 @@ export default function HomePage() {
                     {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
                       <th
                         key={key}
-                        className="cursor-pointer select-none px-3 py-3 text-right font-semibold hover:text-navy-900"
+                        className="cursor-pointer select-none px-3 py-3 text-right font-semibold transition-colors hover:text-navy-900"
                         onClick={() => toggleSort(key)}
                       >
                         <span className="inline-flex items-center gap-1">
                           {SORT_LABELS[key]}
-                          {sortKey === key && <span>{sortDir === "asc" ? "↑" : "↓"}</span>}
+                          {sortKey === key && (
+                            <motion.span
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                            >
+                              {sortDir === "asc" ? "↑" : "↓"}
+                            </motion.span>
+                          )}
                         </span>
                       </th>
                     ))}
@@ -180,49 +243,56 @@ export default function HomePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((team) => (
-                    <tr
-                      key={team.teamId}
-                      className={clsx(
-                        "border-b border-[var(--border-subtle)] last:border-0 hover:bg-slate-50",
-                        team.rank <= 3 && "bg-amber-50/40"
-                      )}
-                    >
-                      <td className="px-5 py-3">
-                        <RankBadge rank={team.rank} />
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <TeamAvatar color={team.color} logo={team.logo} name={team.name} size="sm" />
-                          <div>
-                            <div className="font-semibold text-navy-900">{team.name}</div>
-                            <div className="text-xs text-slate-400">{team.slogan}</div>
+                  <AnimatePresence initial={false}>
+                    {rows.map((team) => (
+                      <motion.tr
+                        key={team.teamId}
+                        layout
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ layout: { duration: 0.4, ease: "easeInOut" }, opacity: { duration: 0.2 } }}
+                        className={clsx(
+                          "border-b border-[var(--border-subtle)] last:border-0 transition-colors hover:bg-slate-50",
+                          team.rank <= 3 && "bg-amber-50/40"
+                        )}
+                      >
+                        <td className="px-5 py-3">
+                          <RankBadge rank={team.rank} />
+                        </td>
+                        <td className="px-3 py-3">
+                          <div className="flex items-center gap-2.5">
+                            <TeamAvatar color={team.color} logo={team.logo} name={team.name} size="sm" />
+                            <div>
+                              <div className="font-semibold text-navy-900">{team.name}</div>
+                              <div className="text-xs text-slate-400">{team.slogan}</div>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 text-right font-bold tabular-nums text-navy-900">
-                        {formatPoints(team.totalPoints)}
-                      </td>
-                      <td className="px-3 py-3 text-right tabular-nums text-slate-600">
-                        {formatCurrency(team.dollarsRaised)}
-                      </td>
-                      <td className="px-3 py-3 text-right tabular-nums text-slate-600">
-                        {team.businessesContacted}
-                      </td>
-                      <td className="px-3 py-3 text-right tabular-nums text-slate-600">
-                        {team.meetings}
-                      </td>
-                      <td className="px-3 py-3 text-right tabular-nums text-slate-600">
-                        {team.pitches}
-                      </td>
-                      <td className="px-3 py-3 text-right tabular-nums text-slate-600">
-                        {formatPoints(team.bonusPoints)}
-                      </td>
-                      <td className="px-3 py-3 text-right">
-                        <MovementBadge movement={team.movement} />
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-3 py-3 text-right font-bold tabular-nums text-navy-900">
+                          {formatPoints(team.totalPoints)}
+                        </td>
+                        <td className="px-3 py-3 text-right tabular-nums text-slate-600">
+                          {formatCurrency(team.dollarsRaised)}
+                        </td>
+                        <td className="px-3 py-3 text-right tabular-nums text-slate-600">
+                          {team.businessesContacted}
+                        </td>
+                        <td className="px-3 py-3 text-right tabular-nums text-slate-600">
+                          {team.meetings}
+                        </td>
+                        <td className="px-3 py-3 text-right tabular-nums text-slate-600">
+                          {team.pitches}
+                        </td>
+                        <td className="px-3 py-3 text-right tabular-nums text-slate-600">
+                          {formatPoints(team.bonusPoints)}
+                        </td>
+                        <td className="px-3 py-3 text-right">
+                          <MovementBadge movement={team.movement} />
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
                   {rows.length === 0 && (
                     <tr>
                       <td colSpan={9} className="px-5 py-8 text-center text-sm text-slate-400">
@@ -233,12 +303,12 @@ export default function HomePage() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
 
           {/* Sidebar */}
           <div className="flex flex-col gap-6">
             {data.latestWin && (
-              <div className="card p-5">
+              <SidebarCard index={0}>
                 <h3 className="text-xs font-bold uppercase tracking-wide text-amber-600">
                   🏅 Win of the Week
                 </h3>
@@ -254,11 +324,11 @@ export default function HomePage() {
                   </span>
                   <span className="text-slate-400">{formatDate(data.latestWin.date)}</span>
                 </div>
-              </div>
+              </SidebarCard>
             )}
 
             {biggestMover && (
-              <div className="card p-5">
+              <SidebarCard index={1}>
                 <h3 className="text-xs font-bold uppercase tracking-wide text-blue-600">
                   📈 Biggest Mover
                 </h3>
@@ -269,11 +339,11 @@ export default function HomePage() {
                     <MovementBadge movement={biggestMover.movement} />
                   </div>
                 </div>
-              </div>
+              </SidebarCard>
             )}
 
             {data.nextMeeting && (
-              <div className="card p-5">
+              <SidebarCard index={2}>
                 <h3 className="text-xs font-bold uppercase tracking-wide text-emerald-600">
                   📅 Next Meeting
                 </h3>
@@ -285,10 +355,10 @@ export default function HomePage() {
                     {data.nextMeeting.sprintChallenge}
                   </p>
                 )}
-              </div>
+              </SidebarCard>
             )}
 
-            <div className="card p-5">
+            <SidebarCard index={3}>
               <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500">
                 💰 Current Scoring
               </h3>
@@ -302,10 +372,10 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </SidebarCard>
 
             {data.prizes.length > 0 && (
-              <div className="card p-5">
+              <SidebarCard index={4}>
                 <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   🎁 Current Prizes
                 </h3>
@@ -317,60 +387,130 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/prizes-awards" className="mt-3 inline-block text-xs font-semibold text-blue-600 hover:underline">
+                <Link
+                  href="/prizes-awards"
+                  className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 transition-transform hover:gap-1.5 hover:underline"
+                >
                   View all prizes →
                 </Link>
-              </div>
+              </SidebarCard>
             )}
           </div>
         </div>
 
         {/* Recent activity */}
-        <div className="mt-10 card p-5">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="mt-10 card p-5"
+        >
           <h2 className="text-lg font-bold text-navy-900">Recent Activity</h2>
           <div className="mt-3 divide-y divide-[var(--border-subtle)]">
-            {data.recentActivity.map((a) => (
-              <div key={a.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                <div className="flex items-center gap-2.5">
-                  <TeamAvatar color={a.team.color} logo={a.team.logo} name={a.team.name} size="sm" />
-                  <div>
-                    <span className="font-semibold text-navy-900">{a.team.name}</span>
-                    <span className="text-slate-500"> · {a.category.name}</span>
-                    {a.dollarAmount > 0 && (
-                      <span className="text-slate-500"> · {formatCurrency(a.dollarAmount)}</span>
-                    )}
+            <AnimatePresence initial={false}>
+              {data.recentActivity.map((a) => (
+                <motion.div
+                  key={a.id}
+                  layout
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center justify-between gap-3 py-2.5 text-sm"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <TeamAvatar color={a.team.color} logo={a.team.logo} name={a.team.name} size="sm" />
+                    <div>
+                      <span className="font-semibold text-navy-900">{a.team.name}</span>
+                      <span className="text-slate-500"> · {a.category.name}</span>
+                      {a.dollarAmount > 0 && (
+                        <span className="text-slate-500"> · {formatCurrency(a.dollarAmount)}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-slate-400">
-                  <span>+{formatPoints(a.pointsAwarded)} pts</span>
-                  <span>{formatDate(a.date)}</span>
-                </div>
-              </div>
-            ))}
+                  <div className="flex items-center gap-3 text-xs text-slate-400">
+                    <span>+{formatPoints(a.pointsAwarded)} pts</span>
+                    <span>{formatDate(a.date)}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
             {data.recentActivity.length === 0 && (
               <p className="py-6 text-center text-sm text-slate-400">No activity logged yet.</p>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: string | number }) {
+function LivePulse({ color = "#93c5fd" }: { color?: string }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-center sm:text-left">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-0.5 text-lg font-bold tabular-nums text-white">{value}</p>
-    </div>
+    <span className="relative flex h-2 w-2">
+      <motion.span
+        className="absolute inline-flex h-full w-full rounded-full"
+        style={{ background: color }}
+        animate={{ opacity: [0.6, 0, 0.6], scale: [1, 2.2, 1] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: color }} />
+    </span>
   );
 }
 
-function PodiumCard({ team, highlight }: { team: LeaderboardRow; highlight: boolean }) {
+function SidebarCard({ index, children }: { index: number; children: React.ReactNode }) {
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.15 + index * 0.05, duration: 0.4 }}
+      whileHover={{ y: -2 }}
+      className="card p-5 transition-shadow hover:shadow-lg"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function MiniStat({
+  label,
+  raw,
+  format,
+}: {
+  label: string;
+  raw: number;
+  format?: (n: number) => string;
+}) {
+  const animated = useCountUp(raw);
+  const display = format ? format(animated) : Math.round(animated).toLocaleString();
+  return (
+    <motion.div
+      whileHover={{ y: -2, backgroundColor: "rgba(255,255,255,0.08)" }}
+      className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-center transition-colors sm:text-left"
+    >
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+      <p className="mt-0.5 text-lg font-bold tabular-nums text-white">{display}</p>
+    </motion.div>
+  );
+}
+
+function PodiumCard({
+  team,
+  highlight,
+  index,
+}: {
+  team: LeaderboardRow;
+  highlight: boolean;
+  index: number;
+}) {
+  const points = useCountUp(team.totalPoints);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay: index * 0.08, duration: 0.45, ease: "easeOut" }}
+      whileHover={{ y: -4, scale: 1.01 }}
       className={clsx(
-        "card relative flex items-center gap-4 overflow-hidden p-5",
+        "card relative flex items-center gap-4 overflow-hidden p-5 transition-shadow hover:shadow-xl",
         highlight && "ring-2 ring-amber-300"
       )}
       style={{ borderTopColor: team.color, borderTopWidth: 4 }}
@@ -385,9 +525,9 @@ function PodiumCard({ team, highlight }: { team: LeaderboardRow; highlight: bool
         </p>
         <p className="truncate text-lg font-extrabold text-navy-900">{team.name}</p>
         <p className="mt-0.5 text-2xl font-black tabular-nums" style={{ color: team.color }}>
-          {formatPoints(team.totalPoints)} <span className="text-sm font-semibold text-slate-400">pts</span>
+          {formatPoints(points)} <span className="text-sm font-semibold text-slate-400">pts</span>
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }

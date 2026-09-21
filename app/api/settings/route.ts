@@ -21,6 +21,7 @@ const bodySchema = z.object({
   showTeamAvatars: z.boolean().default(true),
   showMoversOnDash: z.boolean().default(true),
   primaryAccent: z.string().default("#2a78d6"),
+  heroImageUrl: z.string().default(""),
 });
 
 export async function PUT(request: NextRequest) {

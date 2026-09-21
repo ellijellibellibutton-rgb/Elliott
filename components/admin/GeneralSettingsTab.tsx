@@ -109,6 +109,17 @@ export default function GeneralSettingsTab() {
         </div>
       </Field>
 
+      <Field
+        label="Hero Image URL"
+        hint="Optional. A photo shown behind the homepage hero banner (e.g. an approved AAPLE event/team photo). Leave blank for the default gradient background."
+      >
+        <TextInput
+          value={settings.heroImageUrl}
+          onChange={(e) => setSettings({ ...settings, heroImageUrl: e.target.value })}
+          placeholder="https://..."
+        />
+      </Field>
+
       <div className="space-y-3 rounded-xl border border-[var(--border-subtle)] p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Display Settings</p>
         <Toggle

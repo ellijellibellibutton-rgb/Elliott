@@ -25,6 +25,7 @@ model CampaignSettings {
   showTeamAvatars  Boolean  @default(true)
   showMoversOnDash Boolean  @default(true)
   primaryAccent    String   @default("#2a78d6")
+  heroImageUrl     String   @default("")
   updatedAt        DateTime @updatedAt
 }
 
