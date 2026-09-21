@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import clsx from "clsx";
 import { motion } from "framer-motion";
+import { Trophy, BarChart3, Scale, Gift, Settings, Menu, X } from "lucide-react";
 
 const LINKS = [
-  { href: "/", label: "Leaderboard", emoji: "🏆" },
-  { href: "/analytics", label: "Analytics", emoji: "📊" },
-  { href: "/judges-rules", label: "Judges & Rules", emoji: "⚖️" },
-  { href: "/prizes-awards", label: "Prizes & Awards", emoji: "🎁" },
-  { href: "/admin", label: "Admin", emoji: "⚙️" },
+  { href: "/", label: "Leaderboard", Icon: Trophy },
+  { href: "/analytics", label: "Analytics", Icon: BarChart3 },
+  { href: "/judges-rules", label: "Judges & Rules", Icon: Scale },
+  { href: "/prizes-awards", label: "Prizes & Awards", Icon: Gift },
+  { href: "/admin", label: "Admin", Icon: Settings },
 ];
 
 export default function Navbar({ campaignName }: { campaignName: string }) {
@@ -22,8 +23,11 @@ export default function Navbar({ campaignName }: { campaignName: string }) {
     <header className="sticky top-0 z-50 border-b border-white/5 bg-navy-950/95 backdrop-blur supports-[backdrop-filter]:bg-navy-950/80">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5 group" onClick={() => setOpen(false)}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-lg shadow-lg shadow-blue-900/30 transition-transform group-hover:scale-105">
-            🏆
+          <span
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-lg text-white shadow-lg shadow-blue-900/30 transition-transform group-hover:scale-105"
+            style={{ background: "var(--accent-gradient)" }}
+          >
+            <Trophy size={18} strokeWidth={2.5} />
           </span>
           <div className="leading-tight">
             <div className="text-sm font-bold tracking-tight text-white">{campaignName}</div>
@@ -51,7 +55,7 @@ export default function Navbar({ campaignName }: { campaignName: string }) {
                   />
                 )}
                 <span className="relative flex items-center gap-1.5">
-                  <span aria-hidden>{link.emoji}</span>
+                  <link.Icon size={15} strokeWidth={2.25} aria-hidden />
                   {link.label}
                 </span>
               </Link>
@@ -64,7 +68,7 @@ export default function Navbar({ campaignName }: { campaignName: string }) {
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
         >
-          {open ? "✕" : "☰"}
+          {open ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
@@ -82,7 +86,7 @@ export default function Navbar({ campaignName }: { campaignName: string }) {
                   active ? "bg-white/10 text-white" : "text-slate-300"
                 )}
               >
-                <span aria-hidden>{link.emoji}</span>
+                <link.Icon size={16} strokeWidth={2.25} aria-hidden />
                 {link.label}
               </Link>
             );

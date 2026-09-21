@@ -42,7 +42,7 @@ export function Toggle({
   label?: string;
 }) {
   return (
-    <label className="inline-flex cursor-pointer items-center gap-2">
+    <label className="flex w-fit cursor-pointer items-center gap-2">
       <button
         type="button"
         onClick={() => onChange(!checked)}

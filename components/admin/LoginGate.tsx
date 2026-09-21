@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { Lock } from "lucide-react";
 import { Field, TextInput, Button, ErrorBanner } from "./ui";
 
 export default function LoginGate({ onSuccess }: { onSuccess: () => void }) {
@@ -31,10 +33,26 @@ export default function LoginGate({ onSuccess }: { onSuccess: () => void }) {
   }
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16">
-      <div className="card p-8 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-900 text-2xl text-white">
-          🔒
+    <div className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 px-4 py-16">
+      <div
+        className="blob-1 absolute -left-24 top-10 h-80 w-80 rounded-full opacity-25 blur-3xl"
+        style={{ background: "radial-gradient(circle, #6d5ce7, transparent 70%)" }}
+      />
+      <div
+        className="blob-2 absolute -right-16 bottom-0 h-72 w-72 rounded-full opacity-20 blur-3xl"
+        style={{ background: "radial-gradient(circle, #3987e5, transparent 70%)" }}
+      />
+      <motion.div
+        initial={{ opacity: 0, y: 16, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="relative w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl"
+      >
+        <div
+          className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg"
+          style={{ background: "var(--accent-gradient)" }}
+        >
+          <Lock size={22} strokeWidth={2.25} />
         </div>
         <h1 className="mt-4 text-2xl font-extrabold text-navy-900">Admin Access</h1>
         <p className="mt-1 text-sm text-slate-500">
@@ -56,7 +74,7 @@ export default function LoginGate({ onSuccess }: { onSuccess: () => void }) {
             {loading ? "Signing in…" : "Sign In"}
           </Button>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 }

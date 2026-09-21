@@ -13,14 +13,35 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import { motion } from "framer-motion";
+import {
+  Trophy,
+  DollarSign,
+  Building2,
+  Handshake,
+  Mic,
+  Users,
+  GraduationCap,
+  BarChart3,
+} from "lucide-react";
 import { useLivePolling } from "@/hooks/useLivePolling";
 import type { AnalyticsData, Sprint, ScoringCategory, LeaderboardRow } from "@/lib/types";
 import { formatCurrency, formatDate, formatPoints } from "@/lib/format";
 import StatCard from "@/components/ui/StatCard";
 import TeamAvatar from "@/components/TeamAvatar";
 import MovementBadge from "@/components/MovementBadge";
+import IconBadge from "@/components/IconBadge";
 
 type Filters = { teamId: string; sprintId: string; categoryId: string };
+
+const cardIn = {
+  hidden: { opacity: 0, y: 14 },
+  show: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.05, duration: 0.4, ease: "easeOut" as const },
+  }),
+};
 
 export default function AnalyticsPage() {
   const [filters, setFilters] = useState<Filters>({ teamId: "", sprintId: "", categoryId: "" });
@@ -62,14 +83,15 @@ export default function AnalyticsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-navy-900 sm:text-3xl">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-navy-900 sm:text-3xl">
+            <IconBadge icon={BarChart3} color="#4a3aa7" size="lg" solid />
             Competition Analytics
           </h1>
           <p className="mt-1 text-sm text-slate-500">
             Live performance across every team, sprint, and scoring category.
           </p>
-        </div>
+        </motion.div>
 
         <div className="flex flex-wrap gap-2">
           <FilterSelect
@@ -95,18 +117,30 @@ export default function AnalyticsPage() {
 
       {/* Totals */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
-        <StatCard label="Total Points" value={formatPoints(data.totals.totalPoints)} icon="🏆" accent="#2a78d6" />
-        <StatCard label="$ Raised" value={formatCurrency(data.totals.totalDollars)} icon="💰" accent="#1baf7a" />
-        <StatCard label="Businesses" value={data.totals.businessesContacted} icon="🏢" accent="#eb6834" />
-        <StatCard label="Meetings" value={data.totals.meetings} icon="🤝" accent="#eda100" />
-        <StatCard label="Pitches" value={data.totals.pitches} icon="🎤" accent="#e87ba4" />
-        <StatCard label="Active Teams" value={data.totals.activeTeams} icon="👥" accent="#4a3aa7" />
-        <StatCard label="Active Students" value={data.totals.activeStudents} icon="🎓" accent="#e34948" />
+        {[
+          { label: "Total Points", value: formatPoints(data.totals.totalPoints), icon: Trophy, accent: "#2a78d6" },
+          { label: "$ Raised", value: formatCurrency(data.totals.totalDollars), icon: DollarSign, accent: "#1baf7a" },
+          { label: "Businesses", value: data.totals.businessesContacted, icon: Building2, accent: "#eb6834" },
+          { label: "Meetings", value: data.totals.meetings, icon: Handshake, accent: "#eda100" },
+          { label: "Pitches", value: data.totals.pitches, icon: Mic, accent: "#e87ba4" },
+          { label: "Active Teams", value: data.totals.activeTeams, icon: Users, accent: "#4a3aa7" },
+          { label: "Active Students", value: data.totals.activeStudents, icon: GraduationCap, accent: "#e34948" },
+        ].map((s, i) => (
+          <motion.div key={s.label} custom={i} initial="hidden" animate="show" variants={cardIn}>
+            <StatCard
+              label={s.label}
+              value={s.value}
+              icon={<s.icon size={16} strokeWidth={2.25} />}
+              accent={s.accent}
+              className="transition-shadow hover:shadow-lg"
+            />
+          </motion.div>
+        ))}
       </div>
 
       {/* Weekly charts */}
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <ChartCard title="Points by Week">
+        <ChartCard title="Points by Week" index={0}>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={data.weeklyPerformance} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e1e0d9" vertical={false} />
@@ -118,7 +152,7 @@ export default function AnalyticsPage() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Dollars Raised by Week">
+        <ChartCard title="Dollars Raised by Week" index={1}>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={data.weeklyPerformance} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e1e0d9" vertical={false} />
@@ -133,7 +167,7 @@ export default function AnalyticsPage() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Outreach Activity by Week" className="lg:col-span-2">
+        <ChartCard title="Outreach Activity by Week" index={2} className="lg:col-span-2">
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={data.weeklyPerformance} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e1e0d9" vertical={false} />
@@ -151,7 +185,7 @@ export default function AnalyticsPage() {
 
       {/* Category breakdown + Sprint performance */}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <ChartCard title="Points by Category">
+        <ChartCard title="Points by Category" index={3}>
           <ResponsiveContainer width="100%" height={Math.max(220, data.categoryPerformance.length * 40)}>
             <BarChart
               layout="vertical"
@@ -174,7 +208,7 @@ export default function AnalyticsPage() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Sprint Performance">
+        <ChartCard title="Sprint Performance" index={4}>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={data.sprintPerformance} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e1e0d9" vertical={false} />
@@ -188,7 +222,12 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Team performance table */}
-      <div className="card mt-8 overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.45 }}
+        className="card mt-8 overflow-hidden"
+      >
         <h2 className="border-b border-[var(--border-subtle)] px-5 py-4 text-lg font-bold text-navy-900">
           Team Performance
         </h2>
@@ -209,7 +248,10 @@ export default function AnalyticsPage() {
             </thead>
             <tbody>
               {data.teamPerformance.map((t) => (
-                <tr key={t.teamId} className="border-b border-[var(--border-subtle)] last:border-0">
+                <tr
+                  key={t.teamId}
+                  className="border-b border-[var(--border-subtle)] transition-colors last:border-0 hover:bg-slate-50"
+                >
                   <td className="px-5 py-3 font-semibold text-slate-500">#{t.rank}</td>
                   <td className="px-3 py-3">
                     <div className="flex items-center gap-2.5">
@@ -231,10 +273,15 @@ export default function AnalyticsPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
 
       {/* Win of the Week history */}
-      <div className="card mt-8 overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.38, duration: 0.45 }}
+        className="card mt-8 overflow-hidden"
+      >
         <h2 className="border-b border-[var(--border-subtle)] px-5 py-4 text-lg font-bold text-navy-900">
           Win of the Week History
         </h2>
@@ -252,7 +299,10 @@ export default function AnalyticsPage() {
             </thead>
             <tbody>
               {data.winHistory.map((w) => (
-                <tr key={w.id} className="border-b border-[var(--border-subtle)] last:border-0">
+                <tr
+                  key={w.id}
+                  className="border-b border-[var(--border-subtle)] transition-colors last:border-0 hover:bg-slate-50"
+                >
                   <td className="px-5 py-3 font-semibold text-navy-900">
                     {w.award.icon} {w.award.name}
                   </td>
@@ -275,7 +325,7 @@ export default function AnalyticsPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -284,16 +334,25 @@ function ChartCard({
   title,
   children,
   className,
+  index = 0,
 }: {
   title: string;
   children: React.ReactNode;
   className?: string;
+  index?: number;
 }) {
   return (
-    <div className={`card p-5 ${className ?? ""}`}>
+    <motion.div
+      custom={index}
+      initial="hidden"
+      animate="show"
+      variants={cardIn}
+      whileHover={{ y: -2 }}
+      className={`card p-5 transition-shadow hover:shadow-lg ${className ?? ""}`}
+    >
       <h3 className="mb-2 text-sm font-bold text-navy-900">{title}</h3>
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -312,7 +371,7 @@ function FilterSelect({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-full border border-[var(--border-subtle)] bg-white px-3.5 py-1.5 text-sm text-slate-600 outline-none focus:border-blue-400"
+      className="rounded-full border border-[var(--border-subtle)] bg-white px-3.5 py-1.5 text-sm text-slate-600 outline-none transition-colors focus:border-blue-400"
     >
       <option value="">{label}</option>
       {options.map((o) => (

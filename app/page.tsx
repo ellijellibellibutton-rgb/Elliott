@@ -11,6 +11,16 @@ import { formatCurrency, formatDate, formatDateTime, formatPoints } from "@/lib/
 import TeamAvatar from "@/components/TeamAvatar";
 import RankBadge from "@/components/RankBadge";
 import MovementBadge from "@/components/MovementBadge";
+import IconBadge from "@/components/IconBadge";
+import {
+  Award,
+  TrendingUp,
+  CalendarDays,
+  DollarSign,
+  Gift,
+  ListChecks,
+  Search,
+} from "lucide-react";
 
 type SortKey =
   | "totalPoints"
@@ -120,9 +130,21 @@ export default function HomePage() {
             <div className="absolute inset-0 bg-gradient-to-br from-navy-950/95 via-navy-900/90 to-navy-800/85" />
           </>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800">
+          <div className="absolute inset-0 overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800">
             <div
-              className="absolute inset-0 opacity-[0.07]"
+              className="blob-1 absolute -left-24 -top-32 h-96 w-96 rounded-full opacity-30 blur-3xl"
+              style={{ background: "radial-gradient(circle, #6d5ce7, transparent 70%)" }}
+            />
+            <div
+              className="blob-2 absolute -right-16 top-0 h-80 w-80 rounded-full opacity-25 blur-3xl"
+              style={{ background: "radial-gradient(circle, #3987e5, transparent 70%)" }}
+            />
+            <div
+              className="blob-1 absolute bottom-[-6rem] left-1/3 h-72 w-72 rounded-full opacity-20 blur-3xl"
+              style={{ background: "radial-gradient(circle, #e05fa8, transparent 70%)", animationDelay: "-8s" }}
+            />
+            <div
+              className="absolute inset-0 opacity-[0.06]"
               style={{
                 backgroundImage:
                   "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
@@ -138,7 +160,7 @@ export default function HomePage() {
               <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-blue-300">
                 <LivePulse /> {data.settings?.committeeName ?? "AAPLE Corporate Giving Committee"}
               </p>
-              <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
+              <h1 className="gradient-text mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
                 {data.settings?.campaignName ?? "Corporate Giving Hub"}
               </h1>
               <p className="mt-2 max-w-xl text-sm text-slate-300 sm:text-base">
@@ -207,12 +229,18 @@ export default function HomePage() {
                   <LivePulse color="#0ca30c" /> Live
                 </span>
               </h2>
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search teams…"
-                className="w-48 rounded-full border border-[var(--border-subtle)] px-3.5 py-1.5 text-sm outline-none transition-shadow focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-              />
+              <div className="relative">
+                <Search
+                  size={15}
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search teams…"
+                  className="w-48 rounded-full border border-[var(--border-subtle)] py-1.5 pl-9 pr-3.5 text-sm outline-none transition-shadow focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
             </div>
             <div className="scrollbar-thin overflow-x-auto">
               <table className="w-full min-w-[720px] text-sm">
@@ -309,8 +337,8 @@ export default function HomePage() {
           <div className="flex flex-col gap-6">
             {data.latestWin && (
               <SidebarCard index={0}>
-                <h3 className="text-xs font-bold uppercase tracking-wide text-amber-600">
-                  🏅 Win of the Week
+                <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-600">
+                  <IconBadge icon={Award} color="#eda100" size="sm" /> Win of the Week
                 </h3>
                 <p className="mt-2 text-lg font-bold text-navy-900">{data.latestWin.award.name}</p>
                 <p className="text-sm text-slate-600">
@@ -329,8 +357,8 @@ export default function HomePage() {
 
             {biggestMover && (
               <SidebarCard index={1}>
-                <h3 className="text-xs font-bold uppercase tracking-wide text-blue-600">
-                  📈 Biggest Mover
+                <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-blue-600">
+                  <IconBadge icon={TrendingUp} color="#2a78d6" size="sm" /> Biggest Mover
                 </h3>
                 <div className="mt-2 flex items-center gap-3">
                   <TeamAvatar color={biggestMover.color} logo={biggestMover.logo} name={biggestMover.name} />
@@ -344,8 +372,8 @@ export default function HomePage() {
 
             {data.nextMeeting && (
               <SidebarCard index={2}>
-                <h3 className="text-xs font-bold uppercase tracking-wide text-emerald-600">
-                  📅 Next Meeting
+                <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-emerald-600">
+                  <IconBadge icon={CalendarDays} color="#1baf7a" size="sm" /> Next Meeting
                 </h3>
                 <p className="mt-2 font-bold text-navy-900">{data.nextMeeting.title}</p>
                 <p className="text-xs text-slate-500">{formatDateTime(data.nextMeeting.date)}</p>
@@ -359,8 +387,8 @@ export default function HomePage() {
             )}
 
             <SidebarCard index={3}>
-              <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                💰 Current Scoring
+              <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500">
+                <IconBadge icon={DollarSign} color="#4a3aa7" size="sm" /> Current Scoring
               </h3>
               <ul className="mt-2 space-y-1.5 text-sm">
                 {data.scoringCategories.map((c) => (
@@ -376,8 +404,8 @@ export default function HomePage() {
 
             {data.prizes.length > 0 && (
               <SidebarCard index={4}>
-                <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  🎁 Current Prizes
+                <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500">
+                  <IconBadge icon={Gift} color="#e87ba4" size="sm" /> Current Prizes
                 </h3>
                 <ul className="mt-2 space-y-2">
                   {data.prizes.slice(0, 4).map((p) => (
@@ -405,7 +433,9 @@ export default function HomePage() {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="mt-10 card p-5"
         >
-          <h2 className="text-lg font-bold text-navy-900">Recent Activity</h2>
+          <h2 className="flex items-center gap-2 text-lg font-bold text-navy-900">
+            <IconBadge icon={ListChecks} color="#008300" size="sm" /> Recent Activity
+          </h2>
           <div className="mt-3 divide-y divide-[var(--border-subtle)]">
             <AnimatePresence initial={false}>
               {data.recentActivity.map((a) => (

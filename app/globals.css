@@ -27,6 +27,12 @@
   --status-good: #0ca30c;
   --status-warning: #fab219;
   --status-critical: #d03b3b;
+
+  /* Vibrant accent gradient — used sparingly for hero headlines, primary
+     CTAs and "energy" moments, layered over the navy base for contrast
+     rather than replacing it. */
+  --accent-gradient: linear-gradient(135deg, #3987e5 0%, #6d5ce7 55%, #e05fa8 100%);
+  --accent-gradient-soft: linear-gradient(135deg, #3987e520 0%, #6d5ce720 55%, #e05fa820 100%);
 }
 
 @theme inline {
@@ -54,8 +60,15 @@ body {
 .card {
   background: var(--surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 1rem;
+  border-radius: 1.25rem;
   box-shadow: 0 1px 2px rgba(11, 18, 32, 0.04), 0 8px 24px -12px rgba(11, 18, 32, 0.08);
+}
+
+.gradient-text {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -65,4 +78,28 @@ body {
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background: var(--border-subtle);
   border-radius: 4px;
+}
+
+/* Slow-drifting decorative blobs for hero/section backgrounds — pure CSS
+   so they render for free without a client component. */
+@keyframes blob-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(4%, -6%) scale(1.08); }
+  66% { transform: translate(-3%, 4%) scale(0.96); }
+}
+@keyframes blob-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-5%, 5%) scale(1.05); }
+  66% { transform: translate(4%, -3%) scale(0.94); }
+}
+.blob-1 {
+  animation: blob-drift-1 22s ease-in-out infinite;
+}
+.blob-2 {
+  animation: blob-drift-2 26s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .blob-1, .blob-2 {
+    animation: none;
+  }
 }
