@@ -68,7 +68,7 @@ export default function AdminPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <div className="mb-6 flex items-center gap-3">
-        <IconBadge icon={Settings} color="#4a3aa7" size="lg" solid />
+        <IconBadge icon={Settings} color="#2a5ca8" size="lg" solid />
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-navy-900 sm:text-3xl">
             Admin Control Panel
@@ -86,21 +86,12 @@ export default function AdminPage() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={clsx(
-                "relative flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3.5 py-2.5 text-left text-sm font-semibold transition-colors",
-                activeTab === tab.key ? "text-white" : "text-slate-600 hover:bg-slate-100"
+                "flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3.5 py-2.5 text-left text-sm font-semibold transition-colors duration-150",
+                activeTab === tab.key ? "bg-navy-900 text-white" : "text-slate-600 hover:bg-slate-100"
               )}
             >
-              {activeTab === tab.key && (
-                <motion.span
-                  layoutId="admin-tab-active"
-                  className="absolute inset-0 rounded-lg bg-navy-900"
-                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                />
-              )}
-              <span className="relative flex items-center gap-2">
-                <tab.icon size={16} strokeWidth={2.25} aria-hidden />
-                {tab.label}
-              </span>
+              <tab.icon size={16} strokeWidth={2.25} aria-hidden />
+              {tab.label}
             </button>
           ))}
         </nav>

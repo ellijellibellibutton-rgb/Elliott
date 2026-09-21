@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
@@ -133,7 +134,7 @@ export default function HomePage() {
           <div className="absolute inset-0 overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800">
             <div
               className="blob-1 absolute -left-24 -top-32 h-96 w-96 rounded-full opacity-30 blur-3xl"
-              style={{ background: "radial-gradient(circle, #6d5ce7, transparent 70%)" }}
+              style={{ background: "radial-gradient(circle, #c99a4e, transparent 70%)" }}
             />
             <div
               className="blob-2 absolute -right-16 top-0 h-80 w-80 rounded-full opacity-25 blur-3xl"
@@ -141,7 +142,7 @@ export default function HomePage() {
             />
             <div
               className="blob-1 absolute bottom-[-6rem] left-1/3 h-72 w-72 rounded-full opacity-20 blur-3xl"
-              style={{ background: "radial-gradient(circle, #e05fa8, transparent 70%)", animationDelay: "-8s" }}
+              style={{ background: "radial-gradient(circle, #a83d3d, transparent 70%)", animationDelay: "-8s" }}
             />
             <div
               className="absolute inset-0 opacity-[0.06]"
@@ -157,12 +158,26 @@ export default function HomePage() {
         <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <motion.div initial="hidden" animate="show" variants={fadeUp} custom={0}>
-              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-blue-300">
-                <LivePulse /> {data.settings?.committeeName ?? "AAPLE Corporate Giving Committee"}
-              </p>
-              <h1 className="gradient-text mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
-                {data.settings?.campaignName ?? "Corporate Giving Hub"}
-              </h1>
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/95 shadow-lg ring-1 ring-white/20">
+                  <Image
+                    src="/aaple-academy-logo.png"
+                    alt="AAPLE Academy logo"
+                    width={44}
+                    height={44}
+                    className="h-full w-full object-contain p-1"
+                    priority
+                  />
+                </span>
+                <div>
+                  <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-blue-300">
+                    <LivePulse /> {data.settings?.committeeName ?? "AAPLE Corporate Giving Committee"}
+                  </p>
+                  <h1 className="gradient-text mt-0.5 text-3xl font-extrabold tracking-tight sm:text-4xl">
+                    {data.settings?.campaignName ?? "Corporate Giving Hub"}
+                  </h1>
+                </div>
+              </div>
               <p className="mt-2 max-w-xl text-sm text-slate-300 sm:text-base">
                 {data.settings?.campaignDescription ?? ""}
               </p>
@@ -388,7 +403,7 @@ export default function HomePage() {
 
             <SidebarCard index={3}>
               <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500">
-                <IconBadge icon={DollarSign} color="#4a3aa7" size="sm" /> Current Scoring
+                <IconBadge icon={DollarSign} color="#a83d3d" size="sm" /> Current Scoring
               </h3>
               <ul className="mt-2 space-y-1.5 text-sm">
                 {data.scoringCategories.map((c) => (
@@ -405,7 +420,7 @@ export default function HomePage() {
             {data.prizes.length > 0 && (
               <SidebarCard index={4}>
                 <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500">
-                  <IconBadge icon={Gift} color="#e87ba4" size="sm" /> Current Prizes
+                  <IconBadge icon={Gift} color="#c99a4e" size="sm" /> Current Prizes
                 </h3>
                 <ul className="mt-2 space-y-2">
                   {data.prizes.slice(0, 4).map((p) => (

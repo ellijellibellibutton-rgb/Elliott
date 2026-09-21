@@ -85,7 +85,7 @@ export default function AnalyticsPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-navy-900 sm:text-3xl">
-            <IconBadge icon={BarChart3} color="#4a3aa7" size="lg" solid />
+            <IconBadge icon={BarChart3} color="#2a5ca8" size="lg" solid />
             Competition Analytics
           </h1>
           <p className="mt-1 text-sm text-slate-500">

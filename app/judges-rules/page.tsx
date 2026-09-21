@@ -26,7 +26,7 @@ export default async function JudgesRulesPage() {
         />
         <div
           className="blob-2 absolute -right-16 bottom-0 h-72 w-72 rounded-full opacity-20 blur-3xl"
-          style={{ background: "radial-gradient(circle, #6d5ce7, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #a83d3d, transparent 70%)" }}
         />
         <FadeIn className="relative mx-auto max-w-2xl px-4 sm:px-6">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">

@@ -28,11 +28,15 @@
   --status-warning: #fab219;
   --status-critical: #d03b3b;
 
-  /* Vibrant accent gradient — used sparingly for hero headlines, primary
-     CTAs and "energy" moments, layered over the navy base for contrast
-     rather than replacing it. */
-  --accent-gradient: linear-gradient(135deg, #3987e5 0%, #6d5ce7 55%, #e05fa8 100%);
-  --accent-gradient-soft: linear-gradient(135deg, #3987e520 0%, #6d5ce720 55%, #e05fa820 100%);
+  /* Brand accent gradient — matches AAPLE Academy's crest (navy blue +
+     brick red), used sparingly for hero headlines, primary CTAs and
+     "energy" moments, layered over the navy base for contrast rather
+     than replacing it. */
+  --accent-gradient: linear-gradient(135deg, #3987e5 0%, #b23b3b 100%);
+  --accent-gradient-soft: linear-gradient(135deg, #3987e520 0%, #b23b3b20 100%);
+  --brand-blue: #2a5ca8;
+  --brand-red: #a83d3d;
+  --brand-gold: #c99a4e;
 }
 
 @theme inline {

@@ -36,7 +36,7 @@ export default function LoginGate({ onSuccess }: { onSuccess: () => void }) {
     <div className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 px-4 py-16">
       <div
         className="blob-1 absolute -left-24 top-10 h-80 w-80 rounded-full opacity-25 blur-3xl"
-        style={{ background: "radial-gradient(circle, #6d5ce7, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, #c99a4e, transparent 70%)" }}
       />
       <div
         className="blob-2 absolute -right-16 bottom-0 h-72 w-72 rounded-full opacity-20 blur-3xl"

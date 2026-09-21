@@ -47,14 +47,14 @@ export function Toggle({
         type="button"
         onClick={() => onChange(!checked)}
         className={clsx(
-          "relative h-6 w-11 rounded-full transition-colors",
+          "relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ease-in-out",
           checked ? "bg-blue-600" : "bg-slate-300"
         )}
       >
         <span
           className={clsx(
-            "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
-            checked ? "translate-x-5" : "translate-x-0.5"
+            "absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ease-in-out will-change-transform",
+            checked ? "translate-x-5" : "translate-x-0"
           )}
         />
       </button>

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import clsx from "clsx";
-import { motion } from "framer-motion";
 import { Trophy, BarChart3, Scale, Gift, Settings, Menu, X } from "lucide-react";
 
 const LINKS = [
@@ -43,21 +42,12 @@ export default function Navbar({ campaignName }: { campaignName: string }) {
                 key={link.href}
                 href={link.href}
                 className={clsx(
-                  "relative flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
-                  active ? "text-white" : "text-slate-300 hover:text-white"
+                  "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-150",
+                  active ? "bg-white/10 text-white" : "text-slate-300 hover:bg-white/5 hover:text-white"
                 )}
               >
-                {active && (
-                  <motion.span
-                    layoutId="navbar-active-pill"
-                    className="absolute inset-0 rounded-full bg-white/10"
-                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                  />
-                )}
-                <span className="relative flex items-center gap-1.5">
-                  <link.Icon size={15} strokeWidth={2.25} aria-hidden />
-                  {link.label}
-                </span>
+                <link.Icon size={15} strokeWidth={2.25} aria-hidden />
+                {link.label}
               </Link>
             );
           })}

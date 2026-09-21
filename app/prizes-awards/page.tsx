@@ -24,7 +24,7 @@ export default async function PrizesAwardsPage() {
       <section className="relative overflow-hidden border-b border-[var(--border-subtle)] bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 py-14 text-center text-white">
         <div
           className="blob-1 absolute -right-20 top-0 h-72 w-72 rounded-full opacity-20 blur-3xl"
-          style={{ background: "radial-gradient(circle, #e05fa8, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #a83d3d, transparent 70%)" }}
         />
         <div
           className="blob-2 absolute -left-16 bottom-0 h-72 w-72 rounded-full opacity-20 blur-3xl"
@@ -44,7 +44,7 @@ export default async function PrizesAwardsPage() {
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         {/* Prizes */}
         <section>
-          <SectionHeading icon={Gift} color="#e87ba4" title="Prizes" />
+          <SectionHeading icon={Gift} color="#a83d3d" title="Prizes" />
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {prizes.map((p, i) => (
               <FadeIn key={p.id} delay={i * 0.05}>
@@ -113,7 +113,7 @@ export default async function PrizesAwardsPage() {
 
         {/* Recent winners */}
         <section className="mt-12 mb-16">
-          <SectionHeading icon={Trophy} color="#4a3aa7" title="Recent Winners" />
+          <SectionHeading icon={Trophy} color="#2a5ca8" title="Recent Winners" />
           <FadeIn delay={0.1}>
             <div className="card mt-4 divide-y divide-[var(--border-subtle)]">
               {recentWins.map((w) => (
