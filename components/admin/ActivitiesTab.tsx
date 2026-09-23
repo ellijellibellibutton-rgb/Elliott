@@ -99,16 +99,26 @@ export default function ActivitiesTab() {
   }
 
   async function setApproval(a: Activity, status: Activity["approvalStatus"]) {
-    await adminFetch(`/api/activities/${a.id}`, {
-      method: "PUT",
-      body: JSON.stringify({ approvalStatus: status }),
-    });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/activities/${a.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ approvalStatus: status }),
+      });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to update activity.");
+    }
   }
 
   async function remove(a: Activity) {
-    await adminFetch(`/api/activities/${a.id}`, { method: "DELETE" });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/activities/${a.id}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete activity.");
+    }
   }
 
   return (
@@ -177,7 +187,7 @@ export default function ActivitiesTab() {
         </div>
       </div>
 
-      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Log Activity" wide>
+      <Modal open={showAdd} onClose={() => setShowAdd(false)} onSubmit={addActivity} title="Log Activity" wide>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <Field label="Team">
@@ -282,7 +292,7 @@ export default function ActivitiesTab() {
             </div>
           )}
 
-          <Button onClick={addActivity} className="w-full">
+          <Button type="submit" className="w-full">
             Log Activity
           </Button>
         </div>

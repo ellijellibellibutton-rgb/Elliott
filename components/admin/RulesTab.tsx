@@ -45,8 +45,13 @@ export default function RulesTab() {
   }
 
   async function remove(r: Rule) {
-    await adminFetch(`/api/rules/${r.id}`, { method: "DELETE" });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/rules/${r.id}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete rule.");
+    }
   }
 
   const verification = rules.filter((r) => r.section === "VERIFICATION");
@@ -90,15 +95,14 @@ export default function RulesTab() {
         </div>
       ))}
 
-      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add Rule" wide>
-        <RuleForm value={form} onChange={setForm} onSubmit={add} submitLabel="Add Rule" />
+      <Modal open={showAdd} onClose={() => setShowAdd(false)} onSubmit={add} title="Add Rule" wide>
+        <RuleForm value={form} onChange={setForm} submitLabel="Add Rule" />
       </Modal>
-      <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit Rule" wide>
+      <Modal open={!!editing} onClose={() => setEditing(null)} onSubmit={saveEdit} title="Edit Rule" wide>
         {editing && (
           <RuleForm
             value={editing}
             onChange={(v) => setEditing({ ...editing, ...v })}
-            onSubmit={saveEdit}
             submitLabel="Save Changes"
           />
         )}
@@ -110,12 +114,10 @@ export default function RulesTab() {
 function RuleForm({
   value,
   onChange,
-  onSubmit,
   submitLabel,
 }: {
   value: FormState;
   onChange: (v: FormState) => void;
-  onSubmit: () => void;
   submitLabel: string;
 }) {
   return (
@@ -135,7 +137,7 @@ function RuleForm({
       <Field label="Content">
         <TextArea value={value.content} onChange={(e) => onChange({ ...value, content: e.target.value })} />
       </Field>
-      <Button onClick={onSubmit} className="w-full">
+      <Button type="submit" className="w-full">
         {submitLabel}
       </Button>
     </div>

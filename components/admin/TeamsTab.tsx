@@ -65,29 +65,49 @@ export default function TeamsTab() {
   }
 
   async function toggleArchive(team: Team) {
-    await adminFetch(`/api/teams/${team.id}`, {
-      method: "PUT",
-      body: JSON.stringify({ archived: !team.archived }),
-    });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/teams/${team.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ archived: !team.archived }),
+      });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to update team.");
+    }
   }
 
   async function deleteTeam(team: Team) {
-    await adminFetch(`/api/teams/${team.id}`, { method: "DELETE" });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/teams/${team.id}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete team.");
+    }
   }
 
   async function addMember(teamId: string) {
     const name = memberDrafts[teamId]?.trim();
     if (!name) return;
-    await adminFetch("/api/students", { method: "POST", body: JSON.stringify({ name, teamId }) });
-    setMemberDrafts((d) => ({ ...d, [teamId]: "" }));
-    load();
+    setError(null);
+    try {
+      await adminFetch("/api/students", { method: "POST", body: JSON.stringify({ name, teamId }) });
+      setMemberDrafts((d) => ({ ...d, [teamId]: "" }));
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to add member.");
+    }
   }
 
   async function removeMember(studentId: string) {
-    await adminFetch(`/api/students/${studentId}`, { method: "DELETE" });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/students/${studentId}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to remove member.");
+    }
   }
 
   return (
@@ -160,16 +180,15 @@ export default function TeamsTab() {
         ))}
       </div>
 
-      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add Team">
-        <TeamForm value={form} onChange={setForm} onSubmit={addTeam} submitLabel="Add Team" />
+      <Modal open={showAdd} onClose={() => setShowAdd(false)} onSubmit={addTeam} title="Add Team">
+        <TeamForm value={form} onChange={setForm} submitLabel="Add Team" />
       </Modal>
 
-      <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit Team">
+      <Modal open={!!editing} onClose={() => setEditing(null)} onSubmit={saveEdit} title="Edit Team">
         {editing && (
           <TeamForm
             value={editing}
             onChange={(v) => setEditing({ ...editing, ...v })}
-            onSubmit={saveEdit}
             submitLabel="Save Changes"
           />
         )}
@@ -181,12 +200,10 @@ export default function TeamsTab() {
 function TeamForm({
   value,
   onChange,
-  onSubmit,
   submitLabel,
 }: {
   value: { name: string; description: string; slogan: string; color: string; logo: string };
   onChange: (v: typeof value) => void;
-  onSubmit: () => void;
   submitLabel: string;
 }) {
   return (
@@ -224,7 +241,7 @@ function TeamForm({
           />
         </Field>
       </div>
-      <Button onClick={onSubmit} className="w-full">
+      <Button type="submit" className="w-full">
         {submitLabel}
       </Button>
     </div>

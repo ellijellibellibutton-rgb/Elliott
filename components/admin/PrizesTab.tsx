@@ -54,13 +54,23 @@ export default function PrizesTab() {
   }
 
   async function toggleClaimed(p: Prize) {
-    await adminFetch(`/api/prizes/${p.id}`, { method: "PUT", body: JSON.stringify({ claimed: !p.claimed }) });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/prizes/${p.id}`, { method: "PUT", body: JSON.stringify({ claimed: !p.claimed }) });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to update prize.");
+    }
   }
 
   async function remove(p: Prize) {
-    await adminFetch(`/api/prizes/${p.id}`, { method: "DELETE" });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/prizes/${p.id}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete prize.");
+    }
   }
 
   return (
@@ -91,15 +101,14 @@ export default function PrizesTab() {
         ))}
       </div>
 
-      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add Prize" wide>
-        <PrizeForm value={form} onChange={setForm} onSubmit={add} submitLabel="Add Prize" />
+      <Modal open={showAdd} onClose={() => setShowAdd(false)} onSubmit={add} title="Add Prize" wide>
+        <PrizeForm value={form} onChange={setForm} submitLabel="Add Prize" />
       </Modal>
-      <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit Prize" wide>
+      <Modal open={!!editing} onClose={() => setEditing(null)} onSubmit={saveEdit} title="Edit Prize" wide>
         {editing && (
           <PrizeForm
             value={editing}
             onChange={(v) => setEditing({ ...editing, ...v })}
-            onSubmit={saveEdit}
             submitLabel="Save Changes"
           />
         )}
@@ -111,12 +120,10 @@ export default function PrizesTab() {
 function PrizeForm({
   value,
   onChange,
-  onSubmit,
   submitLabel,
 }: {
   value: FormState;
   onChange: (v: FormState) => void;
-  onSubmit: () => void;
   submitLabel: string;
 }) {
   return (
@@ -172,7 +179,7 @@ function PrizeForm({
         onChange={(v) => onChange({ ...value, claimed: v })}
         label="Claimed"
       />
-      <Button onClick={onSubmit} className="w-full">
+      <Button type="submit" className="w-full">
         {submitLabel}
       </Button>
     </div>

@@ -71,8 +71,13 @@ export default function SprintsTab() {
   }
 
   async function remove(s: Sprint) {
-    await adminFetch(`/api/sprints/${s.id}`, { method: "DELETE" });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/sprints/${s.id}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete sprint.");
+    }
   }
 
   return (
@@ -109,15 +114,14 @@ export default function SprintsTab() {
         ))}
       </div>
 
-      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add Sprint" wide>
-        <SprintForm value={form} onChange={setForm} onSubmit={add} submitLabel="Add Sprint" />
+      <Modal open={showAdd} onClose={() => setShowAdd(false)} onSubmit={add} title="Add Sprint" wide>
+        <SprintForm value={form} onChange={setForm} submitLabel="Add Sprint" />
       </Modal>
-      <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit Sprint" wide>
+      <Modal open={!!editing} onClose={() => setEditing(null)} onSubmit={saveEdit} title="Edit Sprint" wide>
         {editing && (
           <SprintForm
             value={editing}
             onChange={(v) => setEditing({ ...editing, ...v })}
-            onSubmit={saveEdit}
             submitLabel="Save Changes"
           />
         )}
@@ -142,12 +146,10 @@ function StatusPill({ status }: { status: Sprint["status"] }) {
 function SprintForm({
   value,
   onChange,
-  onSubmit,
   submitLabel,
 }: {
   value: FormState;
   onChange: (v: FormState) => void;
-  onSubmit: () => void;
   submitLabel: string;
 }) {
   return (
@@ -193,7 +195,7 @@ function SprintForm({
           onChange={(e) => onChange({ ...value, bonusOpportunities: e.target.value })}
         />
       </Field>
-      <Button onClick={onSubmit} className="w-full">
+      <Button type="submit" className="w-full">
         {submitLabel}
       </Button>
     </div>

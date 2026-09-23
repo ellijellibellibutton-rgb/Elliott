@@ -77,8 +77,13 @@ export default function AwardsTab() {
   }
 
   async function removeAward(a: Award) {
-    await adminFetch(`/api/awards/${a.id}`, { method: "DELETE" });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/awards/${a.id}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete award.");
+    }
   }
 
   async function addWin() {
@@ -101,8 +106,13 @@ export default function AwardsTab() {
   }
 
   async function removeWin(w: WinOfWeek) {
-    await adminFetch(`/api/win-of-week/${w.id}`, { method: "DELETE" });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/win-of-week/${w.id}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete Win of the Week entry.");
+    }
   }
 
   return (
@@ -183,7 +193,7 @@ export default function AwardsTab() {
         </div>
       </section>
 
-      <Modal open={showAddAward} onClose={() => setShowAddAward(false)} title="Add Award">
+      <Modal open={showAddAward} onClose={() => setShowAddAward(false)} onSubmit={addAward} title="Add Award">
         <div className="space-y-4">
           <div className="grid grid-cols-[80px_1fr] gap-4">
             <Field label="Icon">
@@ -199,13 +209,13 @@ export default function AwardsTab() {
               onChange={(e) => setAwardForm({ ...awardForm, description: e.target.value })}
             />
           </Field>
-          <Button onClick={addAward} className="w-full">
+          <Button type="submit" className="w-full">
             Add Award
           </Button>
         </div>
       </Modal>
 
-      <Modal open={!!editingAward} onClose={() => setEditingAward(null)} title="Edit Award">
+      <Modal open={!!editingAward} onClose={() => setEditingAward(null)} onSubmit={saveAwardEdit} title="Edit Award">
         {editingAward && (
           <div className="space-y-4">
             <div className="grid grid-cols-[80px_1fr] gap-4">
@@ -228,14 +238,14 @@ export default function AwardsTab() {
                 onChange={(e) => setEditingAward({ ...editingAward, description: e.target.value })}
               />
             </Field>
-            <Button onClick={saveAwardEdit} className="w-full">
+            <Button type="submit" className="w-full">
               Save Changes
             </Button>
           </div>
         )}
       </Modal>
 
-      <Modal open={showAddWin} onClose={() => setShowAddWin(false)} title="Add Win of the Week" wide>
+      <Modal open={showAddWin} onClose={() => setShowAddWin(false)} onSubmit={addWin} title="Add Win of the Week" wide>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <Field label="Award">
@@ -290,7 +300,7 @@ export default function AwardsTab() {
               <TextInput value={winForm.prize} onChange={(e) => setWinForm({ ...winForm, prize: e.target.value })} />
             </Field>
           </div>
-          <Button onClick={addWin} className="w-full">
+          <Button type="submit" className="w-full">
             Add Win of the Week
           </Button>
         </div>

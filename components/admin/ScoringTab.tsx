@@ -64,16 +64,26 @@ export default function ScoringTab() {
   }
 
   async function toggleEnabled(c: ScoringCategory) {
-    await adminFetch(`/api/scoring/${c.id}`, {
-      method: "PUT",
-      body: JSON.stringify({ enabled: !c.enabled }),
-    });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/scoring/${c.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ enabled: !c.enabled }),
+      });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to update category.");
+    }
   }
 
   async function remove(c: ScoringCategory) {
-    await adminFetch(`/api/scoring/${c.id}`, { method: "DELETE" });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/scoring/${c.id}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete category.");
+    }
   }
 
   async function move(idx: number, dir: -1 | 1) {
@@ -82,10 +92,16 @@ export default function ScoringTab() {
     if (target < 0 || target >= next.length) return;
     [next[idx], next[target]] = [next[target], next[idx]];
     setCategories(next);
-    await adminFetch("/api/scoring/reorder", {
-      method: "POST",
-      body: JSON.stringify({ orderedIds: next.map((c) => c.id) }),
-    });
+    setError(null);
+    try {
+      await adminFetch("/api/scoring/reorder", {
+        method: "POST",
+        body: JSON.stringify({ orderedIds: next.map((c) => c.id) }),
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to reorder categories.");
+      load();
+    }
   }
 
   return (
@@ -148,16 +164,15 @@ export default function ScoringTab() {
         )}
       </div>
 
-      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add Scoring Category" wide>
-        <ScoringForm value={form} onChange={setForm} onSubmit={addCategory} submitLabel="Add Category" />
+      <Modal open={showAdd} onClose={() => setShowAdd(false)} onSubmit={addCategory} title="Add Scoring Category" wide>
+        <ScoringForm value={form} onChange={setForm} submitLabel="Add Category" />
       </Modal>
 
-      <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit Scoring Category" wide>
+      <Modal open={!!editing} onClose={() => setEditing(null)} onSubmit={saveEdit} title="Edit Scoring Category" wide>
         {editing && (
           <ScoringForm
             value={editing}
             onChange={(v) => setEditing({ ...editing, ...v })}
-            onSubmit={saveEdit}
             submitLabel="Save Changes"
           />
         )}
@@ -169,12 +184,10 @@ export default function ScoringTab() {
 function ScoringForm({
   value,
   onChange,
-  onSubmit,
   submitLabel,
 }: {
   value: Omit<ScoringCategory, "id" | "isDemo" | "order">;
   onChange: (v: typeof value) => void;
-  onSubmit: () => void;
   submitLabel: string;
 }) {
   return (
@@ -235,7 +248,7 @@ function ScoringForm({
         onChange={(v) => onChange({ ...value, enabled: v })}
         label="Enabled"
       />
-      <Button onClick={onSubmit} className="w-full">
+      <Button type="submit" className="w-full">
         {submitLabel}
       </Button>
     </div>

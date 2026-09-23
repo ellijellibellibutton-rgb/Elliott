@@ -63,7 +63,13 @@ export default function DataManagementTab({ onLogout }: { onLogout: () => void }
     <div className="max-w-xl space-y-10">
       <section>
         <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">Change Admin Password</h3>
-        <div className="card mt-3 space-y-4 p-5">
+        <form
+          className="card mt-3 space-y-4 p-5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            changePassword();
+          }}
+        >
           <ErrorBanner message={pwError} />
           <SuccessBanner message={pwSuccess} />
           <Field label="Current Password">
@@ -83,8 +89,8 @@ export default function DataManagementTab({ onLogout }: { onLogout: () => void }
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </Field>
-          <Button onClick={changePassword}>Update Password</Button>
-        </div>
+          <Button type="submit">Update Password</Button>
+        </form>
       </section>
 
       <section>

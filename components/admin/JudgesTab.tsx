@@ -45,8 +45,13 @@ export default function JudgesTab() {
   }
 
   async function remove(j: Judge) {
-    await adminFetch(`/api/judges/${j.id}`, { method: "DELETE" });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/judges/${j.id}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete judge.");
+    }
   }
 
   return (
@@ -73,15 +78,14 @@ export default function JudgesTab() {
         ))}
       </div>
 
-      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add Judge">
-        <JudgeForm value={form} onChange={setForm} onSubmit={add} submitLabel="Add Judge" />
+      <Modal open={showAdd} onClose={() => setShowAdd(false)} onSubmit={add} title="Add Judge">
+        <JudgeForm value={form} onChange={setForm} submitLabel="Add Judge" />
       </Modal>
-      <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit Judge">
+      <Modal open={!!editing} onClose={() => setEditing(null)} onSubmit={saveEdit} title="Edit Judge">
         {editing && (
           <JudgeForm
             value={editing}
             onChange={(v) => setEditing({ ...editing, ...v })}
-            onSubmit={saveEdit}
             submitLabel="Save Changes"
           />
         )}
@@ -93,12 +97,10 @@ export default function JudgesTab() {
 function JudgeForm({
   value,
   onChange,
-  onSubmit,
   submitLabel,
 }: {
   value: FormState;
   onChange: (v: FormState) => void;
-  onSubmit: () => void;
   submitLabel: string;
 }) {
   return (
@@ -115,7 +117,7 @@ function JudgeForm({
           onChange={(e) => onChange({ ...value, responsibilities: e.target.value })}
         />
       </Field>
-      <Button onClick={onSubmit} className="w-full">
+      <Button type="submit" className="w-full">
         {submitLabel}
       </Button>
     </div>

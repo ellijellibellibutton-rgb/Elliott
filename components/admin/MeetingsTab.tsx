@@ -74,8 +74,13 @@ export default function MeetingsTab() {
   }
 
   async function remove(m: Meeting) {
-    await adminFetch(`/api/meetings/${m.id}`, { method: "DELETE" });
-    load();
+    setError(null);
+    try {
+      await adminFetch(`/api/meetings/${m.id}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete meeting.");
+    }
   }
 
   return (
@@ -114,10 +119,10 @@ export default function MeetingsTab() {
         {meetings.length === 0 && <p className="text-sm text-slate-400">No meetings scheduled yet.</p>}
       </div>
 
-      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add Meeting" wide>
-        <MeetingForm value={form} sprints={sprints} onChange={setForm} onSubmit={add} submitLabel="Add Meeting" />
+      <Modal open={showAdd} onClose={() => setShowAdd(false)} onSubmit={add} title="Add Meeting" wide>
+        <MeetingForm value={form} sprints={sprints} onChange={setForm} submitLabel="Add Meeting" />
       </Modal>
-      <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit Meeting" wide>
+      <Modal open={!!editing} onClose={() => setEditing(null)} onSubmit={saveEdit} title="Edit Meeting" wide>
         {editing && (
           <MeetingForm
             value={{
@@ -131,7 +136,6 @@ export default function MeetingsTab() {
             }}
             sprints={sprints}
             onChange={(v) => setEditing({ ...editing, ...v, sprintId: v.sprintId || null })}
-            onSubmit={saveEdit}
             submitLabel="Save Changes"
           />
         )}
@@ -144,13 +148,11 @@ function MeetingForm({
   value,
   sprints,
   onChange,
-  onSubmit,
   submitLabel,
 }: {
   value: FormState;
   sprints: Sprint[];
   onChange: (v: FormState) => void;
-  onSubmit: () => void;
   submitLabel: string;
 }) {
   return (
@@ -201,7 +203,7 @@ function MeetingForm({
           onChange={(e) => onChange({ ...value, nextMeetingGoal: e.target.value })}
         />
       </Field>
-      <Button onClick={onSubmit} className="w-full">
+      <Button type="submit" className="w-full">
         {submitLabel}
       </Button>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type FormEvent, type ReactNode } from "react";
 import clsx from "clsx";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/cn";
@@ -91,17 +91,34 @@ export function Button({
 export function Modal({
   open,
   onClose,
+  onSubmit,
   title,
   children,
   wide,
 }: {
   open: boolean;
   onClose: () => void;
+  /** When provided, wraps the content in a <form> so pressing Enter in any
+   * field submits it, same as clicking the primary (type="submit") button. */
+  onSubmit?: () => void;
   title: string;
   children: ReactNode;
   wide?: boolean;
 }) {
   if (!open || typeof document === "undefined") return null;
+
+  const body = onSubmit ? (
+    <form
+      onSubmit={(e: FormEvent) => {
+        e.preventDefault();
+        onSubmit();
+      }}
+    >
+      {children}
+    </form>
+  ) : (
+    children
+  );
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-navy-950/50 p-4" onClick={onClose}>
@@ -118,7 +135,7 @@ export function Modal({
             ✕
           </button>
         </div>
-        {children}
+        {body}
       </div>
     </div>,
     document.body
@@ -132,29 +149,42 @@ export function ConfirmButton({
   variant = "danger",
   className,
 }: {
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   children: ReactNode;
   confirmLabel?: string;
   variant?: "primary" | "secondary" | "danger" | "ghost";
   className?: string;
 }) {
   const [confirming, setConfirming] = useState(false);
+  const [pending, setPending] = useState(false);
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  async function handleClick() {
+    if (pending) return;
+    if (!confirming) {
+      setConfirming(true);
+      resetTimer.current = setTimeout(() => setConfirming(false), 6000);
+      return;
+    }
+    if (resetTimer.current) clearTimeout(resetTimer.current);
+    setPending(true);
+    try {
+      await onConfirm();
+    } finally {
+      setPending(false);
+      setConfirming(false);
+    }
+  }
+
   return (
     <Button
       type="button"
       variant={confirming ? "danger" : variant}
       className={className}
-      onClick={() => {
-        if (confirming) {
-          onConfirm();
-          setConfirming(false);
-        } else {
-          setConfirming(true);
-          setTimeout(() => setConfirming(false), 3000);
-        }
-      }}
+      disabled={pending}
+      onClick={handleClick}
     >
-      {confirming ? confirmLabel : children}
+      {pending ? "Working…" : confirming ? confirmLabel : children}
     </Button>
   );
 }

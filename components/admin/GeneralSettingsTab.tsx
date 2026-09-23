@@ -44,7 +44,13 @@ export default function GeneralSettingsTab() {
   }
 
   return (
-    <div className="max-w-2xl space-y-5">
+    <form
+      className="max-w-2xl space-y-5"
+      onSubmit={(e) => {
+        e.preventDefault();
+        save();
+      }}
+    >
       <ErrorBanner message={error} />
       <SuccessBanner message={success} />
 
@@ -134,9 +140,9 @@ export default function GeneralSettingsTab() {
         />
       </div>
 
-      <Button onClick={save} disabled={saving}>
+      <Button type="submit" disabled={saving}>
         {saving ? "Saving…" : "Save Settings"}
       </Button>
-    </div>
+    </form>
   );
 }
