@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Settings,
   Users,
@@ -49,14 +48,15 @@ const TABS = [
 
 export default function AdminPage() {
   const [authState, setAuthState] = useState<"checking" | "unauthenticated" | "authenticated">(
-    () => (getAdminToken() ? "checking" : "unauthenticated")
+    "checking"
   );
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]["key"]>("general");
 
   useEffect(() => {
     const token = getAdminToken();
-    if (!token) return;
-    fetch("/api/admin/session", { headers: { Authorization: `Bearer ${token}` } })
+    fetch("/api/admin/session", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
       .then((r) => r.json())
       .then((d) => {
         if (!d.authenticated) setAdminToken(null);
@@ -116,29 +116,20 @@ export default function AdminPage() {
         </nav>
 
         <div className="min-w-0 flex-1">
-          <AnimatePresence mode="wait">
-            {TABS.map((tab) => {
-              if (tab.key !== activeTab) return null;
-              return (
-                <motion.div
-                  key={tab.key}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {tab.key === "data" ? (
-                    <DataManagementTab onLogout={handleLogout} />
-                  ) : (
-                    (() => {
-                      const Component = tab.Component!;
-                      return <Component />;
-                    })()
-                  )}
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+          {/* Every tab stays mounted so unsaved edits survive switching
+              between them — only visibility toggles. */}
+          {TABS.map((tab) => (
+            <div key={tab.key} hidden={tab.key !== activeTab}>
+              {tab.key === "data" ? (
+                <DataManagementTab onLogout={handleLogout} />
+              ) : (
+                (() => {
+                  const Component = tab.Component!;
+                  return <Component />;
+                })()
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>
