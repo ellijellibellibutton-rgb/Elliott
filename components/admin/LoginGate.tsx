@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Lock } from "lucide-react";
 import { Field, TextInput, Button, ErrorBanner } from "./ui";
+import { setAdminToken } from "@/lib/adminSession";
 
 export default function LoginGate({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState("");
@@ -20,10 +21,11 @@ export default function LoginGate({ onSuccess }: { onSuccess: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
+      const body = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
         throw new Error(body.error || "Login failed.");
       }
+      setAdminToken(body.token);
       onSuccess();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed.");

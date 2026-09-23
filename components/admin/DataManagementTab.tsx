@@ -59,11 +59,6 @@ export default function DataManagementTab({ onLogout }: { onLogout: () => void }
     URL.revokeObjectURL(url);
   }
 
-  async function logout() {
-    await adminFetch("/api/admin/logout", { method: "POST" });
-    onLogout();
-  }
-
   return (
     <div className="max-w-xl space-y-10">
       <section>
@@ -131,7 +126,7 @@ export default function DataManagementTab({ onLogout }: { onLogout: () => void }
       </section>
 
       <section>
-        <Button variant="secondary" onClick={logout}>
+        <Button variant="secondary" onClick={onLogout}>
           Log Out
         </Button>
       </section>

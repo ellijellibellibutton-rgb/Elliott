@@ -1,9 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
-export const SESSION_COOKIE = "cgh_admin_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 12; // 12 hours
 
 function getSecretKey() {
@@ -42,27 +40,16 @@ export async function verifySessionToken(token: string): Promise<boolean> {
   }
 }
 
-/** For use in Server Components / Route Handlers where cookies() is available. */
-export async function isAdminAuthenticated(): Promise<boolean> {
-  const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
-  if (!token) return false;
-  return verifySessionToken(token);
-}
-
-/** For use inside API route handlers given the NextRequest. */
+/**
+ * Sessions are bearer tokens carried only in the browser's in-memory
+ * session store (see lib/adminSession.ts) rather than a persistent
+ * cookie, so a reload or a duplicated tab always starts unauthenticated.
+ */
 export async function isRequestAuthenticated(
   request: NextRequest
 ): Promise<boolean> {
-  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  const header = request.headers.get("authorization");
+  const token = header?.startsWith("Bearer ") ? header.slice(7) : null;
   if (!token) return false;
   return verifySessionToken(token);
 }
-
-export const SESSION_COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  path: "/",
-  maxAge: SESSION_TTL_SECONDS,
-};

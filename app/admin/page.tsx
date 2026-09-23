@@ -15,9 +15,12 @@ import {
   Medal,
   CalendarDays,
   Database,
+  LogOut,
 } from "lucide-react";
 import LoginGate from "@/components/admin/LoginGate";
 import IconBadge from "@/components/IconBadge";
+import { Button } from "@/components/admin/ui";
+import { getAdminToken, setAdminToken } from "@/lib/adminSession";
 import GeneralSettingsTab from "@/components/admin/GeneralSettingsTab";
 import TeamsTab from "@/components/admin/TeamsTab";
 import ScoringTab from "@/components/admin/ScoringTab";
@@ -46,16 +49,26 @@ const TABS = [
 
 export default function AdminPage() {
   const [authState, setAuthState] = useState<"checking" | "unauthenticated" | "authenticated">(
-    "checking"
+    () => (getAdminToken() ? "checking" : "unauthenticated")
   );
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]["key"]>("general");
 
   useEffect(() => {
-    fetch("/api/admin/session")
+    const token = getAdminToken();
+    if (!token) return;
+    fetch("/api/admin/session", { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
-      .then((d) => setAuthState(d.authenticated ? "authenticated" : "unauthenticated"))
+      .then((d) => {
+        if (!d.authenticated) setAdminToken(null);
+        setAuthState(d.authenticated ? "authenticated" : "unauthenticated");
+      })
       .catch(() => setAuthState("unauthenticated"));
   }, []);
+
+  function handleLogout() {
+    setAdminToken(null);
+    setAuthState("unauthenticated");
+  }
 
   if (authState === "checking") {
     return <div className="mx-auto max-w-7xl px-4 py-20 text-center text-slate-400">Loading…</div>;
@@ -67,16 +80,22 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      <div className="mb-6 flex items-center gap-3">
-        <IconBadge icon={Settings} color="#2a5ca8" size="lg" solid />
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-navy-900 sm:text-3xl">
-            Admin Control Panel
-          </h1>
-          <p className="mt-0.5 text-sm text-slate-500">
-            Manage every part of the Corporate Giving Hub. Changes apply immediately.
-          </p>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <IconBadge icon={Settings} color="#2a5ca8" size="lg" solid />
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-navy-900 sm:text-3xl">
+              Admin Control Panel
+            </h1>
+            <p className="mt-0.5 text-sm text-slate-500">
+              Manage every part of the Corporate Giving Hub. Changes apply immediately.
+            </p>
+          </div>
         </div>
+        <Button variant="secondary" onClick={handleLogout}>
+          <LogOut size={15} strokeWidth={2.25} aria-hidden />
+          Log Out
+        </Button>
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
@@ -109,7 +128,7 @@ export default function AdminPage() {
                   transition={{ duration: 0.2 }}
                 >
                   {tab.key === "data" ? (
-                    <DataManagementTab onLogout={() => setAuthState("unauthenticated")} />
+                    <DataManagementTab onLogout={handleLogout} />
                   ) : (
                     (() => {
                       const Component = tab.Component!;
